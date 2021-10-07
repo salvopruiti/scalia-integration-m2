@@ -1,6 +1,5 @@
 {
   "name": "salvopruiti/scalia-integration-m2",
-  "version": "1.0.1",
   "description": "Scalia Group Integration Module",
   "type": "magento2-module",
   "require": {
