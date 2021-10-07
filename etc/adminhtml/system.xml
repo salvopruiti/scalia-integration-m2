@@ -1,0 +1,50 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="sg_integration_tab" translate="label" sortOrder="500">
+            <label>Scalia Integration</label>
+        </tab>
+        <section id="sg_integration" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Scalia Integration</label>
+            <tab>sg_integration_tab</tab>
+            <resource>ScaliaGroup_Integration::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="export_categories_enabled" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Categories Export Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="sg_integration/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="export_orders_enabled" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Orders Export Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="sg_integration/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="debug_mode" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Debug Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="sg_integration/general/enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="middleware" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Middleware</label>
+                <field id="host" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Host</label>
+                </field>
+                <field id="access_token" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Access Token</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

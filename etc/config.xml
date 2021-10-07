@@ -1,0 +1,17 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <sg_integration>
+            <general>
+                <enabled>1</enabled>
+                <export_categories_enabled>1</export_categories_enabled>
+                <export_orders_enabled>1</export_orders_enabled>
+                <debug_mode>0</debug_mode>
+            </general>
+            <middleware>
+                <host></host>
+                <access_token></access_token>
+            </middleware>
+        </sg_integration>
+    </default>
+</config>

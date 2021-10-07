@@ -1,0 +1,20 @@
+{
+  "name": "salvopruiti/scalia-integration-m2",
+  "version": "1.0.0",
+  "description": "Scalia Group Integration Module",
+  "type": "magento2-module",
+  "require": {
+    "magento/framework": "*"
+  },
+  "license": [
+    "Proprietary"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "ScaliaGroup\\Integration\\": ""
+    }
+  }
+}
