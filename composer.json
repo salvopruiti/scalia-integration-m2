@@ -6,9 +6,7 @@
   "require": {
     "magento/framework": "*"
   },
-  "license": [
-    "Proprietary"
-  ],
+  "license": "proprietary",
   "autoload": {
     "files": [
       "registration.php"
