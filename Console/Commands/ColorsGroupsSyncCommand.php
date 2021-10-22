@@ -113,12 +113,16 @@ class ColorsGroupsSyncCommand extends Command
             $existingGroup = $groupAttrFactory->create()->load($group['code'], 'group_code');
             if(!$existingGroup->getId()) {
                 //Creo
+                echo "\nIl Gruppo non esiste!\n\n";
+                exit;
 
             } else {
                 //Aggiorno
 
                 $existingGroup->setName($newName);
-                $existingGroup->setVisual($group['value_picker']);
+                if($group['value_picker']) {
+                    $existingGroup->setVisual($group['value_picker']);
+                }
                 $existingGroup->save();
 
             }

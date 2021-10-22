@@ -40,14 +40,11 @@ class SaleOrderSaveAfter implements ObserverInterface
 
             $order = $observer->getEvent()->getOrder();
 
-
             $client->setMethod("post");
-//            $client->setParameterGet($parameters = [
-//                'type' => 'order',
-//                'entity_id' => $order->getId()
-//            ]);
-
-            $client->setRawBody($order->toJson());
+            $client->setParameterGet($parameters = [
+                'type' => 'order',
+                'entity_id' => $order->getId()
+            ]);
 
             $response = $client->send();
 
