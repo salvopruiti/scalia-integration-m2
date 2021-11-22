@@ -109,7 +109,7 @@ class ColorsGroupsSyncCommand extends Command
                 $group['name']['it'], $group['name']['it'], $group['name']['en'] ?? $group['name']['it'], $group['name']['de_DE'] ?? $group['name']['en'] ?? $group['name']['it']
             ]);
 
-            /** @var GroupAttr $existingGroup */
+            /** @var \Amasty\GroupedOptions\Model\GroupAttr $existingGroup */
             $existingGroup = $groupAttrFactory->create()->load($group['code'], 'group_code');
             if(!$existingGroup->getId()) {
                 //Creo
@@ -121,6 +121,7 @@ class ColorsGroupsSyncCommand extends Command
 
                 if($group['value_picker']) {
                     $existingGroup->setVisual($group['value_picker']);
+                    $existingGroup->setType(1);
                 }
                 $existingGroup->setName($newName);
                 $existingGroup->save();
