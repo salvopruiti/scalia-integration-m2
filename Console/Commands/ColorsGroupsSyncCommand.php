@@ -114,15 +114,15 @@ class ColorsGroupsSyncCommand extends Command
             if(!$existingGroup->getId()) {
                 //Creo
                 echo "\nIl Gruppo non esiste!\n\n";
-                exit;
+                continue;
 
             } else {
                 //Aggiorno
 
-                $existingGroup->setName($newName);
                 if($group['value_picker']) {
                     $existingGroup->setVisual($group['value_picker']);
                 }
+                $existingGroup->setName($newName);
                 $existingGroup->save();
 
             }
