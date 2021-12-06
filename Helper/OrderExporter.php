@@ -137,7 +137,7 @@ class OrderExporter
                 $codice_ean = $productP->getCodiceEan();
                 $marchio = $productP->getAttributeText('manufacturer');
                 $color = $productP->getAttributeText('color');
-                $size = $productP->getAttributeText('size');
+                $size = $productP->hasData('size') ? $productP->getAttributeText('size') : null;
 
                 $parentIds = ObjectManager::getInstance()->create(\Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable::class)
                     ->getParentIdsByChild($productPId);
