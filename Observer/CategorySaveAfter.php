@@ -38,7 +38,7 @@ class CategorySaveAfter implements ObserverInterface {
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer ' . $access_token
             ]);
-
+            $client->setMethod('GET');
             $client->send();
 
         } catch (\Exception $e) {

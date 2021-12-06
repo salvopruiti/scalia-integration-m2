@@ -2,6 +2,7 @@
 
 namespace ScaliaGroup\Integration\Console\Commands;
 
+use Ess\M2ePro\Model\Amazon\Order\Item;
 use Laminas\Http\Client;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductRepository;
@@ -19,6 +20,7 @@ use Magento\Swatches\Model\ResourceModel\Swatch\Collection;
 use ScaliaGroup\Integration\Helper\Config;
 use ScaliaGroup\Integration\Logger\Logger;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -68,6 +70,8 @@ class OrdersExportCommand extends Command
         $this->setName('sg:orders:export');
         $this->setDescription("Export Orders To Middleware");
         $this->addOption("date", "d", InputOption::VALUE_OPTIONAL);
+        $this->addOption("debug");
+        $this->addArgument("order_ids", InputArgument::OPTIONAL + InputArgument::IS_ARRAY, "Orders to Export");
     }
 
 
@@ -77,78 +81,27 @@ class OrdersExportCommand extends Command
         $host = $this->config->getMiddlewareHost();
         $access_token = $this->config->getMiddlewareAccessToken();
 
+        $this->debug = $input->getOption('debug');
 
         $salesOrderCollection = ObjectManager::getInstance()->create(\Magento\Sales\Model\ResourceModel\Order\Collection::class);
 
-        if($date = $input->getOption('date')) {
-            $date = new \DateTime($date);
-        } else {
-            $date = (new \DateTime())->modify('- 1 day');
-        }
 
-        $salesOrderCollection->addFieldToFilter('created_at', ['gteq' => $date]);
+        if($ids = $input->getArgument('order_ids')) {
+
+            $salesOrderCollection->addFieldToFilter('entity_id', ['in' => $ids]);
+
+        } else {
+
+            if($date = $input->getOption('date')) {
+                $date = new \DateTime($date);
+            } else {
+                $date = (new \DateTime())->modify('- 1 day');
+            }
+            $salesOrderCollection->addFieldToFilter('created_at', ['gteq' => $date]);
+
+        }
 
         $this->exportForSap($salesOrderCollection, $output);
-
-        return;
-
-        /** @var Order $order */
-        foreach ($salesOrderCollection as $order) {
-
-            try {
-
-                if($this->config->getIsDebugMode())
-                    $this->logger->debug("Invio Ordine", ['order' => $order->toArray()]);
-
-
-                $output->write('Invio Ordine '. $order->getIncrementId() .'... ');
-
-                $client = new Client();
-                $client->setUri("$host/api/v1/orders")
-                    ->setHeaders([
-                        'Accept' => 'application/json',
-                        'Authorization' => "Bearer $access_token"
-                    ]);
-
-                $client->setMethod('post');
-                $client->setParameterGet($parameters = [
-                    'type' => 'order',
-                    'entity_id' => $order->getId()
-                ]);
-
-                $response = $client->send();
-
-                if ($response->getStatusCode() != 200) {
-                    $this->logger->error('ColorsSyncCommand', [
-                        'status' => $response->getStatusCode(),
-                        'phrase' => $response->getReasonPhrase(),
-                        'body' => $response->getBody()
-                    ]);
-
-                    if($this->config->getIsDebugMode())
-                        dd($response->getBody());
-
-
-                    die("Invalid Response from Middleware! See sg_integration log\n");
-                }
-
-                $output->writeln('<info>OK</info>');
-
-            } catch (\Exception $e) {
-
-                $this->logger->error('ColorsSyncCommand', [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]);
-                die("Invalid Response from Middleware! See sg_integration log");
-
-            }
-        }
-
-
-
-
-
     }
 
     protected function getColorAttribute()
@@ -236,6 +189,8 @@ class OrdersExportCommand extends Command
     {
         $caratteri = ["'","‘",'"'];
 
+        $this->m2eOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\OrderFactory::class);
+
         // SAP
         $array_items_order = [];
 
@@ -253,14 +208,22 @@ class OrdersExportCommand extends Command
             $array_address_shipping = $order->getShippingAddress();
             $array_address_billing = $order->getBillingAddress();
             $payment_method = $order->getPayment()->getData();
-
             $baseToOrderRate = $array_order_data['base_to_order_rate'];
             $currency = $array_order_data['order_currency_code'];
+
+            if(!$order->getStatus())
+                $output->write("Ignoro Ordine Senza Status");
+
+            $pickup_store = $array_order_data['pickup_store'];
 
             $emailCliente = str_replace($caratteri," ", $array_order_data['customer_email']);
 
             $totale_pagato = $payment_method['base_amount_ordered'];
             $spese_spedizione = $array_order_data['shipping_invoiced'];
+
+            $metodo_spedizione = $order->getShippingMethod();
+
+            dump($metodo_spedizione);
 
             if(!empty($array_address_shipping['email'])){
                 $emailCliente = str_replace($caratteri," ",$array_address_shipping['email']);
@@ -274,30 +237,81 @@ class OrdersExportCommand extends Command
             $line = 1;
 
             $order_items = [];
+            $array_regalo = [];
+
+            $m2eOrder = false;
+            try {
+
+                $m2eOrder = $this->m2eOrder->create()->load($id, 'magento_order_id');
+
+            } catch (\Exception $e) {
+                $m2eOrder = false;
+                //non è un ordine di m2e
+            }
+
+            if($m2eOrder) {
+
+//                echo "[{$id}] - Ordine Amazon: {$m2eOrder->getMarketplaceId()}\n";
+
+                $m2eOrderItem = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\Order\Item::class)->load($m2eOrder->getId(), 'order_id');
+
+                $amazonOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\Amazon\Order::class)->load($m2eOrder->getId(), 'order_id');
+                $amazonOrderItem = ObjectManager::getInstance()->get(Item::class)->load($m2eOrderItem->getId(), 'order_item_id');
+
+
+                $array_regalo = [[
+                    'gift_id' => 'gift_amazon-'.$order->getId(),
+                    'mittente' => ($amazonOrderItem['gift_message']!='') ?  'no-mittente' : 'none',
+                    'destinatario' => ($amazonOrderItem['gift_message']!='') ?  'no-destinatario' : 'none',
+                    'messaggio' => ($amazonOrderItem['gift_message']!='') ? $amazonOrderItem['gift_message'] : 'Confezione Regalo Non Attiva' //str_replace($caratteri, " ", $m2eproAmazonOrderItem['gift_message']),
+                ]];
+
+            } else {
+
+                try {
+
+                     $giftMessage = ObjectManager::getInstance()->get(OrderRepositoryInterface::class)->get($order->getId());
+
+                    $array_regalo = [
+                        [
+                            'gift_id' => $giftMessage->getGiftMessageId(),
+                            'mittente' => str_replace($caratteri, " ", $giftMessage->getSender()) ?: "none",
+                            'destinatario' => str_replace($caratteri, " ", $giftMessage->getRecipient() )?: "none",
+                            'messaggio' => preg_replace("/\r|\n/", "", str_replace($caratteri, " ", $giftMessage->getMessage()))
+                        ]];
+
+                } catch (\Exception $e) {
+                    $array_gift_data = [];
+                    $array_regalo = [
+                        [
+                            'gift_id' => null,
+                            'mittente' => 'none',
+                            'destinatario' => 'none',
+                            'messaggio' => 'Confezione Regalo Non Attiva'
+                        ]
+                    ];
+
+                }
+
+            }
+
+
+
 
             /** @var Order\Item $item */
             foreach($items as $item) {
                 if($item->getParentItem()) continue;
 
                 $productOptions = $item->getData('product_options');
-                $productId = $productOptions['info_buyRequest']['product'];
+                $productId = $productOptions['info_buyRequest']['product'] ?? null;
                 $productPrice = $item->getOriginalPrice();
                 $originalPrice = $item->getOriginalPrice();
-
                 $productP = ObjectManager::getInstance()->get(ProductRepository::class)->get($item->getSku());
 
-                try {
-                    $array_gift_data = ObjectManager::getInstance()->get(OrderRepositoryInterface::class)->get($order->getId());
-                } catch (\Exception $e) {
-                    $array_gift_data = [];
-                }
 
-                $array_regalo = array(
-                    'gift_id' => (!empty($array_gift_data)) ? $array_order_data['gift_message_id'] : 'gift_store-' . $id,
-                    'mittente' => (!empty($array_gift_data)) ? str_replace($caratteri, " ", $array_gift_data['sender']) : 'none',
-                    'destinatario' => (!empty($array_gift_data)) ? str_replace($caratteri, " ", $array_gift_data['recipient']) : 'none',
-                    'messaggio' => (!empty($array_gift_data)) ? preg_replace("/\r|\n/", "", str_replace($caratteri, " ", $array_gift_data['message'])) : 'Confezione Regalo',
-                );
+
+
+
 
 
                 if($productP) {
@@ -355,9 +369,9 @@ class OrdersExportCommand extends Command
                     'OriginalPrice' => $originalPrice,
                     'TaxAmount' => $item->getData('tax_amount'),
                     'Ordered Qty'   => $item->getQtyOrdered(),
-                    'cliente' => str_replace($caratteri," ",$array_order_data['customer_firstname']).' '.str_replace($caratteri," ",$array_order_data['customer_lastname']),
-                    'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname']),
-                    'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname']),
+                    'cliente' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']).' '.str_replace($caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
+                    'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']),
+                    'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
 
                     'data_ordine' => $array_order_data['created_at'],
                     'dati_spedizione_cliente' => preg_replace( "/\r|\n/", "", str_replace($caratteri," ",$array_address_shipping['firstname'])." ".str_replace($caratteri," ",$array_address_shipping['lastname'])) ,
@@ -371,7 +385,7 @@ class OrdersExportCommand extends Command
                     'dati_fatturazione_telefono' => str_replace($caratteri," ",$array_address_billing['telephone']),
 
                     'spese_spedizione' => $spese_spedizione,
-                    'regalo' => implode( '|', $array_regalo ),
+                    'regalo' => implode( '|', $array_regalo[0] ),
 
                     'status' => $array_order_data['status'],
                     'metodo_pagamento' => $payment_method['method'],
@@ -402,26 +416,28 @@ class OrdersExportCommand extends Command
 
                 if($item->getQtyOrdered()>1) {
 
-                    $order_items[] = array(
-                        'idOrder'   => $id,
-                        //'idt'   => $order->getId(),
-                        'idIncrement'   => $order->getIncrementId(),
-                        //'idProduct'     => $item->getId(),
-                        'idProduct'     => $productPId,
-                        'name'          => str_replace($caratteri," ", $item->getName() ),
-                        'sku'           => $productPsku,
-                        'price'         => $productPrice,
-                        'canale'        => $canale,
-                        'stagione'      => $stagione,
-                        'codice_ean'    => $codice_ean,
-                        'marchio'       => $marchio,
-                        'color'       => $color,
-                        'size'       => $size,
-                        'finalPriceInclTax'    => $item->getData('base_price_incl_tax'),
-                        'originalPrice' => $originalPrice,
-                        'taxAmount' => $item->getData('tax_amount'),
-                        'orderedQty'   => 1
-                    );
+                    for($i = 1; $i<= $item->getQtyOrdered(); $i++) {
+                        $order_items[] = array(
+                            'idOrder' => $id,
+                            //'idt'   => $order->getId(),
+                            'idIncrement' => $order->getIncrementId(),
+                            //'idProduct'     => $item->getId(),
+                            'idProduct' => $productPId,
+                            'name' => str_replace($caratteri, " ", $item->getName()),
+                            'sku' => $productPsku,
+                            'price' => $productPrice,
+                            'canale' => $canale,
+                            'stagione' => $stagione,
+                            'codice_ean' => $codice_ean,
+                            'marchio' => $marchio,
+                            'color' => $color,
+                            'size' => $size,
+                            'finalPriceInclTax' => $item->getData('base_price_incl_tax'),
+                            'originalPrice' => $originalPrice,
+                            'taxAmount' => $item->getData('tax_amount'),
+                            'orderedQty' => 1
+                        );
+                    }
 
                 } else {
 
@@ -452,19 +468,18 @@ class OrdersExportCommand extends Command
                 $line++;
             }
 
-
-
+            $dati_spedizione_indirizzo = implode("\n", array_unique($array_address_shipping->getStreet()));
 
             $array_dati_ordine[] = [
                 'products' =>  json_encode($order_items),
                 'entity_id' => $array_order_data['entity_id'],
                 'order_id' => $array_order_data['increment_id'],
-                'cliente' => str_replace($caratteri," ",$array_order_data['customer_firstname']).' '.str_replace($caratteri," ",$array_order_data['customer_lastname']),
-                'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname']),
-                'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname']),
+                'cliente' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']).' '.str_replace($caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
+                'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']),
+                'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
                 'data_ordine' => $array_order_data['created_at'],
                 'dati_spedizione_cliente' => str_replace($caratteri," ",$array_address_shipping['firstname'])." ".str_replace($caratteri," ",$array_address_shipping['lastname']),
-                'dati_spedizione_indirizzo' => str_replace($caratteri," ",$array_address_shipping['street'])." <br>".str_replace($caratteri," ",$array_address_shipping['city'])." <br>".str_replace($caratteri," ",$array_address_shipping['postcode'])." <br>".str_replace($caratteri," ",$array_address_shipping['region'])." ".str_replace($caratteri," ",$array_address_shipping['country_id']),
+                'dati_spedizione_indirizzo' => $dati_spedizione_indirizzo,
                 'dati_spedizione_email' => $emailCliente,
                 'dati_spedizione_telefono' => str_replace($caratteri," ",$array_address_shipping['telephone']),
 
@@ -495,9 +510,16 @@ class OrdersExportCommand extends Command
                 'coupon_name' => $array_order_data['coupon_rule_name'],
                 'coupon_descr' => $array_order_data['discount_description'],
                 'coupon_value' => $array_order_data['discount_amount'],
+
+                'pickup_store' => $pickup_store,
+                'metodo_spedizione' => $metodo_spedizione
             ];
 
 
+        }
+
+        if($this->debug) {
+            dd($array_dati_ordine);
         }
 
         array_unshift($array_items_order, array_keys($array_items_order[0]));

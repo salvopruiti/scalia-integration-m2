@@ -25,4 +25,7 @@
         </arguments>
     </type>
 
+    <preference for="ScaliaGroup\Integration\Api\OrderRepositoryInterface" type="ScaliaGroup\Integration\Model\OrderRepository"/>
+    <preference for="ScaliaGroup\Integration\Api\Data\OrderInterface" type="ScaliaGroup\Integration\Model\Order"/>
+
 </config>
