@@ -41,7 +41,7 @@ class OrderExporter
         $payment_method = $order->getPayment()->getData();
         $baseToOrderRate = $array_order_data['base_to_order_rate'];
         $currency = $array_order_data['order_currency_code'];
-        $pickup_store = $array_order_data['pickup_store'];
+        $pickup_store = $array_order_data['pickup_store'] ?? null;
         $emailCliente = str_replace($caratteri," ", $array_order_data['customer_email']);
         $totale_pagato = $payment_method['base_amount_ordered'];
         $spese_spedizione = $array_order_data['shipping_invoiced'];
