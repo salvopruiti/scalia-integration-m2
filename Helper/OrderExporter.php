@@ -132,8 +132,8 @@ class OrderExporter
                 $productPrice = $productP->getPrice();
                 $originalPrice = $productP->getPrice();
                 $productPsku = $productP->getSku();
-                $canale = $productP->getAttributeText('supplier');
-                $stagione = $productP->getAttributeText('season');
+                $canale = $productP->hasData('supplier') ? $productP->getAttributeText('supplier') : null;
+                $stagione = $productP->hasData('season') ? $productP->getAttributeText('season') : null;
                 $codice_ean = $productP->getCodiceEan();
                 $marchio = $productP->getAttributeText('manufacturer');
                 $color = $productP->getAttributeText('color');
