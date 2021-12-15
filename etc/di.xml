@@ -27,5 +27,7 @@
 
     <preference for="ScaliaGroup\Integration\Api\OrderRepositoryInterface" type="ScaliaGroup\Integration\Model\OrderRepository"/>
     <preference for="ScaliaGroup\Integration\Api\Data\OrderInterface" type="ScaliaGroup\Integration\Model\Order"/>
+    <preference for="ScaliaGroup\Integration\Api\Data\OrderProductInterface" type="ScaliaGroup\Integration\Model\OrderProduct"/>
+    <preference for="ScaliaGroup\Integration\Api\Data\OrderGiftMessageInterface" type="ScaliaGroup\Integration\Model\OrderGiftMessage"/>
 
 </config>

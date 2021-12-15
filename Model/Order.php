@@ -198,4 +198,14 @@ class Order extends AbstractModel implements OrderInterface
     {
         return $this->_getData('metodo_spedizione');
     }
+
+    public function getDatiSpedizioneAzienda()
+    {
+        return $this->_getData('dati_spedizione_azienda');
+    }
+
+    public function getDatiFatturazioneAzienda()
+    {
+        return $this->_getData('dati_fatturazione_azienda');
+    }
 }

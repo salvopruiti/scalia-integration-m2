@@ -174,6 +174,7 @@ class OrderExporter
                     'idProduct' => $productPId,
                     'name' => str_replace($caratteri, " ", $item->getName()),
                     'sku' => $productPsku,
+                    'clean_sku' => $productConf ?? $productPsku,
                     'price' => $productPrice,
                     'canale' => $canale,
                     'stagione' => $stagione,
@@ -197,41 +198,37 @@ class OrderExporter
             'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']),
             'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
             'data_ordine' => $array_order_data['created_at'],
+            'metodo_spedizione' => $metodo_spedizione,
             'dati_spedizione_cliente' => str_replace($caratteri," ",$array_address_shipping['firstname'])." ".str_replace($caratteri," ",$array_address_shipping['lastname']),
+            'dati_spedizione_azienda' => $array_address_shipping['company'],
             'dati_spedizione_indirizzo' => $dati_spedizione_indirizzo,
             'dati_spedizione_email' => $emailCliente,
             'dati_spedizione_telefono' => str_replace($caratteri," ",$array_address_shipping['telephone']),
-
-            //,   'dati_fatturazione' => $array_dati_fatturazione = json_encode(array(
-            'dati_fatturazione_cliente' => str_replace($caratteri," ",$array_address_billing['firstname'])." ".str_replace($caratteri," ",$array_address_billing['lastname']),
-            'dati_fatturazione_indirizzo' => $dati_fatturazione_indirizzo." ".str_replace($caratteri," ",$array_address_billing['city'])." ".str_replace($caratteri," ",$array_address_billing['postcode'])." ".str_replace($caratteri," ",$array_address_billing['region'])." ".str_replace($caratteri," ",$array_address_billing['country_id']),
-            'dati_fatturazione_email' => str_replace($caratteri," ",$array_address_billing['email']),
-            'dati_fatturazione_telefono' => str_replace($caratteri," ",$array_address_billing['telephone']),
-            //    ))
-            'spese_spedizione' => $spese_spedizione,
-            'regalo' => $array_regalo,
-
-            'status' => $array_order_data['status'],
-            'metodo_pagamento' => $payment_method['method'],
-            'totale_pagato' => number_format($totale_pagato, 2 , '.', ''),
-            'coupon' => $array_order_data['coupon_code'],
-
             'dati_spedizione_city' => str_replace($caratteri," ",$array_address_shipping['city']),
             'dati_spedizione_postcode' => str_replace($caratteri," ",$array_address_shipping['postcode']),
             'dati_spedizione_region' => str_replace($caratteri," ",$array_address_shipping['region']),
             'dati_spedizione_country_id' => str_replace($caratteri," ",$array_address_shipping['country_id']),
+            'dati_fatturazione_cliente' => str_replace($caratteri," ",$array_address_billing['firstname'])." ".str_replace($caratteri," ",$array_address_billing['lastname']),
+            'dati_fatturazione_azienda' => $array_address_shipping['company'],
+            'dati_fatturazione_indirizzo' => $dati_fatturazione_indirizzo." ".str_replace($caratteri," ",$array_address_billing['city'])." ".str_replace($caratteri," ",$array_address_billing['postcode'])." ".str_replace($caratteri," ",$array_address_billing['region'])." ".str_replace($caratteri," ",$array_address_billing['country_id']),
+            'dati_fatturazione_email' => str_replace($caratteri," ",$array_address_billing['email']),
+            'dati_fatturazione_telefono' => str_replace($caratteri," ",$array_address_billing['telephone']),
+            'spese_spedizione' => $spese_spedizione,
+            'regalo' => $array_regalo,
+            'status' => $array_order_data['status'],
+            'metodo_pagamento' => $payment_method['method'],
+            'totale_pagato' => number_format($totale_pagato, 2 , '.', ''),
+            'coupon' => $array_order_data['coupon_code'],
+            'coupon_name' => $array_order_data['coupon_rule_name'],
+            'coupon_descr' => $array_order_data['discount_description'],
+            'coupon_value' => $array_order_data['discount_amount'],
             'business' => $business,
             'note_ebay' => $noteEbay,
             'currency' => $currency,
             'order_currency_pagato' => $order_currency_pagato,
             'order_currency_spedizione' => $order_currency_spedizione,
             'base_to_order_rate' => $baseToOrderRate,
-            'coupon_name' => $array_order_data['coupon_rule_name'],
-            'coupon_descr' => $array_order_data['discount_description'],
-            'coupon_value' => $array_order_data['discount_amount'],
-
-            'pickup_store' => $pickup_store,
-            'metodo_spedizione' => $metodo_spedizione
+            'pickup_store' => $pickup_store
         ];
 
     }

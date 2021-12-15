@@ -5,7 +5,7 @@ namespace ScaliaGroup\Integration\Api\Data;
 interface OrderInterface
 {
     /**
-     * @return array
+     * @return \ScaliaGRoup\Integration\Api\Data\OrderProductInterface[]
      */
     public function getProducts();
 
@@ -91,7 +91,7 @@ interface OrderInterface
     public function getSpeseSpedizione();
 
     /**
-     * @return array
+     * @return \ScaliaGroup\Integration\Api\Data\OrderGiftMessageInterface[]
      */
     public function getRegalo();
 
@@ -189,4 +189,14 @@ interface OrderInterface
      * @return mixed
      */
     public function getMetodoSpedizione();
+
+    /**
+     * @return string|null
+     */
+    public function getDatiSpedizioneAzienda();
+
+    /**
+     * @return string|null
+     */
+    public function getDatiFatturazioneAzienda();
 }
