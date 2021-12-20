@@ -30,4 +30,6 @@
     <preference for="ScaliaGroup\Integration\Api\Data\OrderProductInterface" type="ScaliaGroup\Integration\Model\OrderProduct"/>
     <preference for="ScaliaGroup\Integration\Api\Data\OrderGiftMessageInterface" type="ScaliaGroup\Integration\Model\OrderGiftMessage"/>
 
+    <preference for="ScaliaGroup\Integration\Api\CacheManagementInterface" type="ScaliaGroup\Integration\Model\CacheManagement" />
+
 </config>
