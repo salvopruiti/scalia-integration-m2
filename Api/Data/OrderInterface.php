@@ -5,7 +5,7 @@ namespace ScaliaGroup\Integration\Api\Data;
 interface OrderInterface
 {
     /**
-     * @return \ScaliaGRoup\Integration\Api\Data\OrderProductInterface[]
+     * @return \ScaliaGroup\Integration\Api\Data\OrderProductInterface[]
      */
     public function getProducts();
 

@@ -21,7 +21,9 @@ class CategorySaveAfter implements ObserverInterface {
 
     public function execute(Observer $observer)
     {
-        if(!$this->config->getEnabled() || $this->config->getExportCategoriesEnabled())
+        $module_enabled = $this->config->getEnabled();
+        $export_categories_enabled = $this->config->getExportCategoriesEnabled();
+        if (!$module_enabled || !$export_categories_enabled)
             return;
 
         $category = $observer->getEvent()->getCategory();
