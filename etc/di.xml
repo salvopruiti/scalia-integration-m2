@@ -32,4 +32,7 @@
 
     <preference for="ScaliaGroup\Integration\Api\CacheManagementInterface" type="ScaliaGroup\Integration\Model\CacheManagement" />
 
+    <preference for="ScaliaGroup\Integration\Api\ModuleInformationInterface" type="ScaliaGroup\Integration\Model\ModuleInformation"/>
+    <preference for="ScaliaGroup\Integration\Api\Data\ModuleInterface" type="ScaliaGroup\Integration\Model\Module"/>
+
 </config>

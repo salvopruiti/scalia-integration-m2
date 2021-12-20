@@ -20,4 +20,11 @@
             <resource ref="Magento_Backend::flush_magento_cache"/>
         </resources>
     </route>
+
+    <route method="GET" url="/V1/sg_integration/info">
+        <service class="ScaliaGroup\Integration\Api\ModuleInformationInterface" method="get"/>
+        <resources>
+            <resource ref="Magento_Backend::admin"/>
+        </resources>
+    </route>
 </routes>
