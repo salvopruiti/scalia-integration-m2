@@ -10,14 +10,14 @@
     <route method="GET" url="/V1/sg_integration/cache/status">
         <service class="ScaliaGroup\Integration\Api\CacheManagementInterface" method="get"/>
         <resources>
-            <resource ref="Magento_Sales::actions_view"/>
+            <resource ref="Magento_Backend::cache"/>
         </resources>
     </route>
 
     <route method="POST" url="/V1/sg_integration/cache/clean">
         <service class="ScaliaGroup\Integration\Api\CacheManagementInterface" method="clean"/>
         <resources>
-            <resource ref="Magento_Sales::actions_view"/>
+            <resource ref="Magento_Backend::flush_magento_cache"/>
         </resources>
     </route>
 </routes>
