@@ -44,7 +44,7 @@ class OrderExporter
         $pickup_store = $array_order_data['pickup_store'] ?? null;
         $emailCliente = str_replace($caratteri," ", $array_order_data['customer_email']);
         $totale_pagato = $payment_method['base_amount_ordered'];
-        $spese_spedizione = $array_order_data['shipping_invoiced'];
+        $spese_spedizione = $array_order_data['base_shipping_amount'];
         $metodo_spedizione = $order->getShippingMethod();
         $dati_spedizione_indirizzo = implode("\n", array_unique($array_address_shipping->getStreet()));
         $dati_fatturazione_indirizzo = implode("\n", array_unique($array_address_billing->getStreet()));
