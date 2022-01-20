@@ -27,4 +27,11 @@
             <resource ref="Magento_Backend::admin"/>
         </resources>
     </route>
+
+    <route method="POST" url="/V1/sg_integration/syncro">
+        <service class="ScaliaGroup\Integration\Api\SyncroInterface" method="post"/>
+        <resources>
+            <resource ref="Magento_Catalog::catalog" />
+        </resources>
+    </route>
 </routes>
