@@ -223,8 +223,6 @@ class OrdersExportCommand extends Command
 
             $metodo_spedizione = $order->getShippingMethod();
 
-            dump($metodo_spedizione);
-
             if(!empty($array_address_shipping['email'])){
                 $emailCliente = str_replace($caratteri," ",$array_address_shipping['email']);
             }
@@ -532,8 +530,8 @@ class OrdersExportCommand extends Command
         $this->csv->setDelimiter(';')->appendData($filename_items_orders, $array_items_order);
 
         //MIDDLEWARE
-        $filename_orders = $directory. "/mw/" . date('Ymd_His').'_orders_export.csv';
-        $this->csv->setDelimiter(';')->appendData($filename_orders, $array_dati_ordine);
+//        $filename_orders = $directory. "/mw/" . date('Ymd_His').'_orders_export.csv';
+//        $this->csv->setDelimiter(';')->appendData($filename_orders, $array_dati_ordine);
 
 
     }
