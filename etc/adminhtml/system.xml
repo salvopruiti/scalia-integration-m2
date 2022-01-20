@@ -46,5 +46,28 @@
                 </field>
             </group>
         </section>
+
+
+        <section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="gls" translate="label" type="text" sortOrder="910" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>GLS</label>
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Title</label>
+                </field>
+                <field id="name" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Method Name</label>
+                </field>
+            </group>
+            <group id="tnt" translate="label" type="text" sortOrder="920" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>TNT</label>
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Title</label>
+                </field>
+                <field id="name" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Method Name</label>
+                </field>
+            </group>
+        </section>
+
     </system>
 </config>

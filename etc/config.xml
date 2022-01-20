@@ -13,5 +13,21 @@
                 <access_token></access_token>
             </middleware>
         </sg_integration>
+        <carriers>
+            <gls>
+                <active>0</active>
+                <tite>GLS</tite>
+                <name>GLS</name>
+                <is_online>1</is_online>
+                <model>ScaliaGroup\Integration\Model\Carrier\Gls</model>
+            </gls>
+            <tntit>
+                <active>0</active>
+                <tite>TNT</tite>
+                <name>TNT</name>
+                <is_online>1</is_online>
+                <model>ScaliaGroup\Integration\Model\Carrier\TNT</model>
+            </tntit>
+        </carriers>
     </default>
 </config>
