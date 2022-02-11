@@ -208,4 +208,22 @@ class Order extends AbstractModel implements OrderInterface
     {
         return $this->_getData('dati_fatturazione_azienda');
     }
+
+    public function getDatiFatturazioneCity()
+    {
+        return $this->_getData('dati_fatturazione_city');
+    }
+    public function getDatiFatturazionePostcode()
+    {
+        return $this->_getData('dati_fatturazione_postcode');
+    }
+    public function getDatiFatturazioneRegion()
+    {
+        return $this->_getData('dati_fatturazione_region');
+    }
+    public function getDatiFatturazioneCountryId()
+    {
+        return $this->_getData('dati_fatturazione_country_id');
+    }
+
 }

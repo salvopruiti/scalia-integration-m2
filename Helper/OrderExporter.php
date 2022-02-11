@@ -31,7 +31,11 @@ class OrderExporter
         }
 
         $caratteri = ["'","‘",'"'];
-        $this->m2eOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\OrderFactory::class);
+        try {
+            $this->m2eOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\OrderFactory::class);
+        } catch (\Throwable $e) {
+            $this->m2eOrder = false;
+        }
 
         $id = $order->getId();
         $items = $order->getItemsCollection();
@@ -61,7 +65,7 @@ class OrderExporter
         $m2eOrder = false;
 
         try {
-            $m2eOrder = $this->m2eOrder->create()->load($id, 'magento_order_id');
+            if($this->m2eOrder) $m2eOrder = $this->m2eOrder->create()->load($id, 'magento_order_id');
         } catch (\Exception $e) {
             $m2eOrder = false;
         }
@@ -73,6 +77,19 @@ class OrderExporter
             $amazonOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\Amazon\Order::class)->load($m2eOrder->getId(), 'order_id');
             $amazonOrderItem = ObjectManager::getInstance()->get(Item::class)->load($m2eOrderItem->getId(), 'order_item_id');
 
+            if($taxDetails = $amazonOrder->getTaxDetails()) {
+
+                if(!$taxDetails['product'])
+                $business = 1;
+
+                if($currency != 'EUR') {
+                    $taxDetails['shipping'] /= $baseToOrderRate;
+                }
+
+                $spese_spedizione += round($taxDetails['shipping'], 2);
+
+            }
+
 
             $array_regalo = [[
                 'gift_id' => 'gift_amazon-'.$order->getId(),
@@ -80,6 +97,7 @@ class OrderExporter
                 'destinatario' => ($amazonOrderItem['gift_message']!='') ?  'no-destinatario' : 'none',
                 'messaggio' => ($amazonOrderItem['gift_message']!='') ? $amazonOrderItem['gift_message'] : 'Confezione Regalo Non Attiva' //str_replace($caratteri, " ", $m2eproAmazonOrderItem['gift_message']),
             ]];
+
 
         } else {
 
@@ -190,16 +208,32 @@ class OrderExporter
             }
         }
 
+        $customerFirstName = trim($order->getCustomerFirstname() . ' ' . $order->getCustomerMiddlename());
+        $customerLastName = $order->getCustomerLastname();
+
+        $customerShippingFirstName = trim($array_address_shipping->getFirstname() . ' ' . $array_address_shipping->getMiddlename());
+        $customerShippingLastName = $array_address_shipping->getLastname();
+
+        $customerBillingFirstName = trim($array_address_billing->getFirstname() . ' ' . $array_address_billing->getMiddlename());
+        $customerBillingLastName = $array_address_billing->getLastname();
+
+        if(!$customerFirstName) {
+            $customerFirstName = $customerBillingFirstName;
+            $customerLastName = $customerBillingLastName;
+        }
+
+
+
         return [
             'products' =>  $order_items,
             'entity_id' => $array_order_data['entity_id'],
             'order_id' => $array_order_data['increment_id'],
-            'cliente' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']).' '.str_replace($caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
-            'cliente_nome' => str_replace($caratteri," ",$array_order_data['customer_firstname'] ?: $array_address_billing['firstname']),
-            'cliente_cognome' => str_replace( $caratteri," ",$array_order_data['customer_lastname'] ?: $array_address_billing['lastname']),
+            'cliente' => $customerFirstName . ' ' . $customerLastName,
+            'cliente_nome' => $customerFirstName,
+            'cliente_cognome' => $customerLastName,
             'data_ordine' => $array_order_data['created_at'],
             'metodo_spedizione' => $metodo_spedizione,
-            'dati_spedizione_cliente' => str_replace($caratteri," ",$array_address_shipping['firstname'])." ".str_replace($caratteri," ",$array_address_shipping['lastname']),
+            'dati_spedizione_cliente' => $customerShippingFirstName . ' ' . $customerShippingLastName,
             'dati_spedizione_azienda' => $array_address_shipping['company'],
             'dati_spedizione_indirizzo' => $dati_spedizione_indirizzo,
             'dati_spedizione_email' => $emailCliente,
@@ -208,9 +242,13 @@ class OrderExporter
             'dati_spedizione_postcode' => str_replace($caratteri," ",$array_address_shipping['postcode']),
             'dati_spedizione_region' => str_replace($caratteri," ",$array_address_shipping['region']),
             'dati_spedizione_country_id' => str_replace($caratteri," ",$array_address_shipping['country_id']),
-            'dati_fatturazione_cliente' => str_replace($caratteri," ",$array_address_billing['firstname'])." ".str_replace($caratteri," ",$array_address_billing['lastname']),
+            'dati_fatturazione_cliente' => $customerBillingFirstName . ' ' . $customerBillingLastName,
             'dati_fatturazione_azienda' => $array_address_shipping['company'],
-            'dati_fatturazione_indirizzo' => $dati_fatturazione_indirizzo." ".str_replace($caratteri," ",$array_address_billing['city'])." ".str_replace($caratteri," ",$array_address_billing['postcode'])." ".str_replace($caratteri," ",$array_address_billing['region'])." ".str_replace($caratteri," ",$array_address_billing['country_id']),
+            'dati_fatturazione_indirizzo' => $dati_fatturazione_indirizzo,
+            'dati_fatturazione_city' => $array_address_billing['city'],
+            'dati_fatturazione_postcode' => $array_address_billing['postcode'],
+            'dati_fatturazione_region' => $array_address_billing['region'],
+            'dati_fatturazione_country_id' => $array_address_billing['country_id'],
             'dati_fatturazione_email' => str_replace($caratteri," ",$array_address_billing['email']),
             'dati_fatturazione_telefono' => str_replace($caratteri," ",$array_address_billing['telephone']),
             'spese_spedizione' => $spese_spedizione,

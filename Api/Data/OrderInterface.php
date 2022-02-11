@@ -199,4 +199,25 @@ interface OrderInterface
      * @return string|null
      */
     public function getDatiFatturazioneAzienda();
+
+    /**
+     * @return mixed
+     */
+    public function getDatiFatturazioneCity();
+
+    /**
+     * @return mixed
+     */
+    public function getDatiFatturazionePostcode();
+
+    /**
+     * @return mixed
+     */
+    public function getDatiFatturazioneRegion();
+
+    /**
+     * @return mixed
+     */
+    public function getDatiFatturazioneCountryId();
+
 }
