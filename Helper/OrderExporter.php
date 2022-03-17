@@ -64,6 +64,11 @@ class OrderExporter
         $array_regalo = [];
         $m2eOrder = false;
 
+        $codeUE = ['AT', 'BE', 'BG', 'CY', 'HR', 'DK', 'EE', 'FI', 'FR', 'DE', 'EL', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'CZ', 'SK', 'RO', 'SI', 'ES', 'SE', 'HU', 'GR'];
+
+
+        $business = (int)!in_array($array_address_shipping['country_id'], $codeUE);
+
         try {
             if($this->m2eOrder) $m2eOrder = $this->m2eOrder->create()->load($id, 'magento_order_id');
         } catch (\Exception $e) {
@@ -77,16 +82,37 @@ class OrderExporter
             $amazonOrder = ObjectManager::getInstance()->get(\Ess\M2ePro\Model\Amazon\Order::class)->load($m2eOrder->getId(), 'order_id');
             $amazonOrderItem = ObjectManager::getInstance()->get(Item::class)->load($m2eOrderItem->getId(), 'order_item_id');
 
+            if($amazonOrder->getCurrency() != 'EUR') {
+
+                $order_currency_pagato = $amazonOrder->getPaidAmount();
+                $order_currency_spedizione = $amazonOrder->getShippingPrice();
+
+            }
+
             if($taxDetails = $amazonOrder->getTaxDetails()) {
 
-                if(!$taxDetails['product'])
-                $business = 1;
+                if($amUkBusiness = ($order->getGrandTotal() < 135 && $order->getOrderCurrencyCode() == 'GBP')) {
 
-                if($currency != 'EUR') {
-                    $taxDetails['shipping'] /= $baseToOrderRate;
+                    $order_currency_pagato -= $amazonOrder->getProductPriceTaxAmount();
+                    $order_currency_spedizione = $amazonOrder->getShippingPrice();
+
+                    $totale_pagato -= $order->getBaseTaxAmount();
+                    $business = 1;
+
+                } else {
+
+                    if(!$taxDetails['product'])
+                        $business = 1;
+
+                    if($currency != 'EUR') {
+                        $taxDetails['shipping'] /= $baseToOrderRate;
+                    }
+
+                    $spese_spedizione += round($taxDetails['shipping'], 2);
+
                 }
 
-                $spese_spedizione += round($taxDetails['shipping'], 2);
+
 
             }
 
@@ -200,7 +226,7 @@ class OrderExporter
                     'marchio' => $marchio,
                     'color' => $color,
                     'size' => $size,
-                    'finalPriceInclTax' => $item->getData('base_price_incl_tax'),
+                    'finalPriceInclTax' => isset($amUkBusiness) && $amUkBusiness ? $item->getData('base_price') : $item->getData('base_price_incl_tax'),
                     'originalPrice' => $originalPrice,
                     'taxAmount' => $item->getData('tax_amount'),
                     'orderedQty' => 1
