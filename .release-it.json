@@ -1,10 +1,7 @@
 {
   "plugins": {
     "@release-it/bumper": {
-      "out": {
-        "file": "VERSION",
-        "type": "text/plain"
-      }
+      "out": "composer.json"
     }
   }
 }

@@ -13,5 +13,6 @@
     "psr-4": {
       "ScaliaGroup\\Integration\\": ""
     }
-  }
+  },
+    "version": "1.0.19"
 }
